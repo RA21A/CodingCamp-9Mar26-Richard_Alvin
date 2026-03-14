@@ -1,20 +1,42 @@
 // Productivity Dashboard - Main JavaScript File
 
 // Dashboard Controller
+// Main controller that manages all dashboard components and coordinates their interactions
 class DashboardController {
     constructor() {
         this.greetingDisplay = null;
         this.focusTimer = null;
         this.taskManager = null;
         this.quickLinksPanel = null;
+        this.themeManager = null; // NEW: Manages light/dark theme switching
+        this.settingsManager = null; // NEW: Manages user settings (name, timer duration)
     }
 
     init() {
         console.log('Dashboard initializing...');
         
         try {
-            // Initialize Greeting Display
-            this.greetingDisplay = new GreetingDisplay();
+            // NEW: Initialize Theme Manager first to apply saved theme immediately
+            // Handles light/dark mode toggle and persists user preference
+            this.themeManager = new ThemeManager(this);
+            this.themeManager.init();
+        } catch (e) {
+            console.error('Failed to initialize Theme Manager:', e);
+        }
+
+        try {
+            // NEW: Initialize Settings Manager for user customization
+            // Manages custom name and Pomodoro timer duration settings
+            this.settingsManager = new SettingsManager(this);
+            this.settingsManager.init();
+        } catch (e) {
+            console.error('Failed to initialize Settings Manager:', e);
+        }
+
+        try {
+            // Initialize Greeting Display with storage controller for custom name support
+            // UPDATED: Now accepts storageController to access custom user name
+            this.greetingDisplay = new GreetingDisplay(this);
             this.greetingDisplay.init();
         } catch (e) {
             console.error('Failed to initialize Greeting Display:', e);
@@ -22,8 +44,9 @@ class DashboardController {
         }
 
         try {
-            // Initialize Focus Timer
-            this.focusTimer = new FocusTimer();
+            // Initialize Focus Timer with storage controller for custom duration support
+            // UPDATED: Now accepts storageController to load custom Pomodoro duration
+            this.focusTimer = new FocusTimer(this);
             this.focusTimer.init();
         } catch (e) {
             console.error('Failed to initialize Focus Timer:', e);
@@ -109,14 +132,16 @@ class DashboardController {
 }
 
 // Greeting Display Component
+// Displays current time, date, and personalized greeting message
 class GreetingDisplay {
-    constructor() {
+    constructor(storageController) {
+        this.storageController = storageController; // UPDATED: Added to access custom user name
         this.intervalId = null;
     }
 
     init() {
         this.updateDisplay();
-        // Update every second
+        // Update every second to keep time accurate
         this.intervalId = setInterval(() => this.updateDisplay(), 1000);
     }
 
@@ -136,7 +161,10 @@ class GreetingDisplay {
         }
 
         if (greetingElement) {
-            greetingElement.textContent = this.getGreeting(now.getHours());
+            // NEW: Load custom user name from localStorage
+            // If name is set, greeting will include it (e.g., "Good Morning, John")
+            const userName = this.storageController.getFromStorage('productivity_dashboard_username');
+            greetingElement.textContent = this.getGreeting(now.getHours(), userName);
         }
     }
 
@@ -172,25 +200,42 @@ class GreetingDisplay {
         return `${dayName}, ${monthName} ${dayOfMonth}, ${year}`;
     }
 
-    getGreeting(hour) {
+    getGreeting(hour, userName) {
+        let greeting;
+        // Determine greeting based on time of day
         // 5-11: Morning, 12-16: Afternoon, 17-20: Evening, 21-4: Night
         if (hour >= 5 && hour <= 11) {
-            return 'Good Morning';
+            greeting = 'Good Morning';
         } else if (hour >= 12 && hour <= 16) {
-            return 'Good Afternoon';
+            greeting = 'Good Afternoon';
         } else if (hour >= 17 && hour <= 20) {
-            return 'Good Evening';
+            greeting = 'Good Evening';
         } else {
             // 21-23 and 0-4
-            return 'Good Night';
+            greeting = 'Good Night';
         }
+        
+        // NEW: Personalize greeting with user's name if set
+        // Example: "Good Morning" becomes "Good Morning, John"
+        if (userName) {
+            greeting += `, ${userName}`;
+        }
+        
+        return greeting;
     }
 }
 
 // Focus Timer Component
+// Pomodoro-style timer with customizable duration
 class FocusTimer {
-    constructor() {
-        this.remainingSeconds = 1500; // 25 minutes in seconds
+    constructor(storageController) {
+        this.storageController = storageController; // UPDATED: Added to access custom timer duration
+        
+        // NEW: Load custom timer duration from localStorage (default: 25 minutes)
+        // Users can set duration between 1-60 minutes via settings
+        const duration = this.storageController.getFromStorage('productivity_dashboard_timer_duration') || 25;
+        this.defaultDuration = duration * 60; // Convert minutes to seconds
+        this.remainingSeconds = this.defaultDuration;
         this.isRunning = false;
         this.intervalId = null;
     }
@@ -198,6 +243,16 @@ class FocusTimer {
     init() {
         this.setupEventListeners();
         this.updateDisplay();
+    }
+
+    // NEW: Update timer duration when user changes it in settings
+    // Only updates display if timer is not currently running
+    updateDuration(minutes) {
+        this.defaultDuration = minutes * 60;
+        if (!this.isRunning) {
+            this.remainingSeconds = this.defaultDuration;
+            this.updateDisplay();
+        }
     }
 
     start() {
@@ -225,7 +280,8 @@ class FocusTimer {
 
     reset() {
         this.stop();
-        this.remainingSeconds = 1500;
+        // UPDATED: Reset to custom duration instead of hardcoded 1500 seconds
+        this.remainingSeconds = this.defaultDuration;
         this.updateDisplay();
     }
 
@@ -246,8 +302,9 @@ class FocusTimer {
     }
 
     formatTime() {
-        // Clamp remainingSeconds to valid range [0, 1500]
-        const seconds = Math.max(0, Math.min(1500, this.remainingSeconds));
+        // UPDATED: Clamp to custom duration instead of hardcoded 1500
+        // Ensures time display stays within valid range [0, defaultDuration]
+        const seconds = Math.max(0, Math.min(this.defaultDuration, this.remainingSeconds));
         
         const minutes = Math.floor(seconds / 60);
         const secs = seconds % 60;
@@ -294,6 +351,9 @@ class FocusTimer {
 document.addEventListener('DOMContentLoaded', () => {
     const dashboard = new DashboardController();
     dashboard.init();
+    // NEW: Store dashboard instance globally so settings can access timer
+    // This allows SettingsManager to update timer duration dynamically
+    window.dashboardInstance = dashboard;
 });
 
 // Task Manager Component
@@ -572,5 +632,191 @@ class QuickLinksPanel {
 
     generateId() {
         return `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
+    }
+}
+
+// Theme Manager Component
+// NEW FEATURE: Manages light/dark theme switching with localStorage persistence
+// Provides toggle button to switch between themes and remembers user preference
+class ThemeManager {
+    constructor(storageController) {
+        this.storageController = storageController;
+        this.storageKey = 'productivity_dashboard_theme';
+    }
+
+    init() {
+        // Load saved theme preference on startup
+        this.loadTheme();
+        this.setupEventListeners();
+    }
+
+    // Load theme from localStorage (defaults to 'light' if not set)
+    loadTheme() {
+        const theme = this.storageController.getFromStorage(this.storageKey) || 'light';
+        this.applyTheme(theme);
+    }
+
+    // Toggle between light and dark themes
+    toggleTheme() {
+        const currentTheme = document.body.classList.contains('dark-theme') ? 'dark' : 'light';
+        const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+        this.applyTheme(newTheme);
+        // Save preference to localStorage for persistence
+        this.storageController.saveToStorage(this.storageKey, newTheme);
+    }
+
+    // Apply theme by adding/removing CSS class and updating button icon
+    applyTheme(theme) {
+        const toggleBtn = document.getElementById('theme-toggle');
+        if (theme === 'dark') {
+            document.body.classList.add('dark-theme');
+            // Show sun icon when in dark mode (click to go light)
+            if (toggleBtn) toggleBtn.textContent = '☀️';
+        } else {
+            document.body.classList.remove('dark-theme');
+            // Show moon icon when in light mode (click to go dark)
+            if (toggleBtn) toggleBtn.textContent = '🌙';
+        }
+    }
+
+    // Set up click handler for theme toggle button
+    setupEventListeners() {
+        const toggleBtn = document.getElementById('theme-toggle');
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', () => this.toggleTheme());
+        }
+    }
+}
+
+// Settings Manager Component
+// NEW FEATURE: Manages user customization settings via modal dialog
+// Handles custom name for greeting and Pomodoro timer duration
+class SettingsManager {
+    constructor(storageController) {
+        this.storageController = storageController;
+    }
+
+    init() {
+        this.setupEventListeners();
+        // Load existing settings into form fields
+        this.loadSettings();
+    }
+
+    // Load saved settings from localStorage and populate form fields
+    loadSettings() {
+        const userName = this.storageController.getFromStorage('productivity_dashboard_username');
+        const timerDuration = this.storageController.getFromStorage('productivity_dashboard_timer_duration') || 25;
+        
+        const nameInput = document.getElementById('user-name-input');
+        const timerInput = document.getElementById('timer-duration-input');
+        
+        // Pre-fill name input if user has saved a name
+        if (nameInput && userName) {
+            nameInput.value = userName;
+        }
+        
+        // Pre-fill timer duration (default: 25 minutes)
+        if (timerInput) {
+            timerInput.value = timerDuration;
+        }
+    }
+
+    // Show settings modal dialog
+    openModal() {
+        const modal = document.getElementById('settings-modal');
+        if (modal) {
+            modal.classList.remove('hidden');
+        }
+    }
+
+    // Hide settings modal dialog
+    closeModal() {
+        const modal = document.getElementById('settings-modal');
+        if (modal) {
+            modal.classList.add('hidden');
+        }
+    }
+
+    // Save custom user name to localStorage
+    // Name is used to personalize greeting (e.g., "Good Morning, John")
+    saveName() {
+        const nameInput = document.getElementById('user-name-input');
+        if (nameInput) {
+            const name = nameInput.value.trim();
+            if (name.length > 0 && name.length <= 50) {
+                // Save valid name (1-50 characters)
+                this.storageController.saveToStorage('productivity_dashboard_username', name);
+                alert('Name saved successfully!');
+            } else if (name.length === 0) {
+                // Clear name if input is empty
+                this.storageController.removeFromStorage('productivity_dashboard_username');
+                alert('Name cleared!');
+            } else {
+                // Reject names over 50 characters
+                alert('Name must be 50 characters or less');
+            }
+        }
+    }
+
+    // Save custom Pomodoro timer duration to localStorage
+    // Duration must be between 1-60 minutes
+    saveTimerDuration() {
+        const timerInput = document.getElementById('timer-duration-input');
+        if (timerInput) {
+            const duration = parseInt(timerInput.value);
+            if (duration >= 1 && duration <= 60) {
+                // Save valid duration
+                this.storageController.saveToStorage('productivity_dashboard_timer_duration', duration);
+                
+                // Immediately update the timer display with new duration
+                const dashboard = window.dashboardInstance;
+                if (dashboard && dashboard.focusTimer) {
+                    dashboard.focusTimer.updateDuration(duration);
+                }
+                
+                alert('Timer duration saved successfully!');
+            } else {
+                // Reject invalid durations
+                alert('Duration must be between 1 and 60 minutes');
+            }
+        }
+    }
+
+    // Set up event listeners for settings modal interactions
+    setupEventListeners() {
+        const settingsBtn = document.getElementById('settings-btn');
+        const closeBtn = document.querySelector('.close');
+        const saveNameBtn = document.getElementById('save-name-btn');
+        const saveTimerBtn = document.getElementById('save-timer-btn');
+        const modal = document.getElementById('settings-modal');
+
+        // Open modal when settings button clicked
+        if (settingsBtn) {
+            settingsBtn.addEventListener('click', () => this.openModal());
+        }
+
+        // Close modal when X button clicked
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => this.closeModal());
+        }
+
+        // Save name when save button clicked
+        if (saveNameBtn) {
+            saveNameBtn.addEventListener('click', () => this.saveName());
+        }
+
+        // Save timer duration when save button clicked
+        if (saveTimerBtn) {
+            saveTimerBtn.addEventListener('click', () => this.saveTimerDuration());
+        }
+
+        // Close modal when clicking outside of it (on backdrop)
+        if (modal) {
+            window.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    this.closeModal();
+                }
+            });
+        }
     }
 }

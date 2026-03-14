@@ -9,7 +9,41 @@
 </head>
 <body>
     <div class="container">
+        <!-- NEW FEATURE: Settings Bar with theme toggle and settings button -->
+        <!-- Theme toggle switches between light/dark mode -->
+        <!-- Settings button opens modal for customizing name and timer duration -->
+        <div id="settings-bar">
+            <button id="theme-toggle" title="Toggle dark mode">🌙</button>
+            <button id="settings-btn" title="Settings">⚙️</button>
+        </div>
+
+        <!-- NEW FEATURE: Settings Modal for user customization -->
+        <!-- Allows users to set custom name for greeting and Pomodoro timer duration -->
+        <div id="settings-modal" class="modal hidden">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Settings</h2>
+                
+                <!-- Custom Name Setting -->
+                <!-- Name appears in greeting (e.g., "Good Morning, John") -->
+                <div class="settings-group">
+                    <label for="user-name-input">Your Name:</label>
+                    <input type="text" id="user-name-input" placeholder="Enter your name" maxlength="50">
+                    <button id="save-name-btn">Save Name</button>
+                </div>
+                
+                <!-- Custom Pomodoro Duration Setting -->
+                <!-- Users can set timer duration between 1-60 minutes -->
+                <div class="settings-group">
+                    <label for="timer-duration-input">Pomodoro Duration (minutes):</label>
+                    <input type="number" id="timer-duration-input" min="1" max="60" value="25">
+                    <button id="save-timer-btn">Save Duration</button>
+                </div>
+            </div>
+        </div>
+
         <!-- Greeting Section -->
+        <!-- UPDATED: Now displays custom name if set in settings -->
         <section id="greeting-section">
             <div id="time-display">--:--:-- --</div>
             <div id="date-display">Loading...</div>
@@ -17,6 +51,7 @@
         </section>
 
         <!-- Focus Timer Section -->
+        <!-- UPDATED: Timer duration now customizable via settings (1-60 minutes) -->
         <section id="timer-section">
             <h2>Focus Timer</h2>
             <div id="timer-display">25:00</div>
