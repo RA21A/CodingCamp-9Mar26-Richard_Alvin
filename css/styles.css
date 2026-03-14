@@ -1,0 +1,424 @@
+/* CSS Variables */
+:root {
+    --primary-color: #4a90e2;
+    --secondary-color: #f5f5f5;
+    --text-color: #333;
+    --border-color: #ddd;
+    --success-color: #5cb85c;
+    --danger-color: #d9534f;
+    --spacing-sm: 0.5rem;
+    --spacing-md: 1rem;
+    --spacing-lg: 1.5rem;
+    --spacing-xl: 2rem;
+    --font-size-sm: 0.875rem;
+    --font-size-md: 1rem;
+    --font-size-lg: 1.25rem;
+    --font-size-xl: 2rem;
+    --border-radius: 4px;
+}
+
+/* Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    line-height: 1.6;
+    color: var(--text-color);
+    background-color: var(--secondary-color);
+    padding: var(--spacing-md);
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Utility Classes */
+.hidden {
+    display: none;
+}
+
+/* Section Styles */
+section {
+    background: white;
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+    border-radius: var(--border-radius);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+    margin-bottom: var(--spacing-md);
+    color: var(--primary-color);
+}
+
+/* Greeting Section */
+#greeting-section {
+    text-align: center;
+    padding: var(--spacing-xl);
+}
+
+#time-display {
+    font-size: var(--font-size-xl);
+    font-weight: bold;
+    margin-bottom: var(--spacing-sm);
+}
+
+#date-display {
+    font-size: var(--font-size-lg);
+    color: #666;
+    margin-bottom: var(--spacing-md);
+}
+
+#greeting-text {
+    font-size: var(--font-size-lg);
+    color: var(--primary-color);
+}
+
+/* Timer Section */
+#timer-section {
+    text-align: center;
+}
+
+#timer-display {
+    font-size: 3rem;
+    font-weight: bold;
+    margin: var(--spacing-lg) 0;
+    color: var(--primary-color);
+}
+
+#timer-controls {
+    display: flex;
+    gap: var(--spacing-md);
+    justify-content: center;
+}
+
+#timer-notification {
+    margin-top: var(--spacing-md);
+    padding: var(--spacing-md);
+    background-color: var(--success-color);
+    color: white;
+    border-radius: var(--border-radius);
+}
+
+/* Button Styles */
+button {
+    padding: var(--spacing-sm) var(--spacing-lg);
+    font-size: var(--font-size-md);
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    background-color: var(--primary-color);
+    color: white;
+    transition: background-color 0.2s;
+}
+
+button:hover {
+    background-color: #357abd;
+}
+
+button:active {
+    transform: translateY(1px);
+}
+
+/* Form Styles */
+form {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
+}
+
+input[type="text"],
+input[type="url"] {
+    flex: 1;
+    padding: var(--spacing-sm);
+    font-size: var(--font-size-md);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+}
+
+input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+/* Task List Styles */
+#task-list {
+    list-style: none;
+}
+
+.task-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    margin-bottom: var(--spacing-sm);
+}
+
+.task-item.completed .task-description {
+    text-decoration: line-through;
+    opacity: 0.6;
+}
+
+.task-checkbox {
+    cursor: pointer;
+}
+
+.task-description {
+    flex: 1;
+}
+
+.task-edit,
+.task-delete {
+    padding: var(--spacing-sm);
+    font-size: var(--font-size-sm);
+}
+
+.task-delete {
+    background-color: var(--danger-color);
+}
+
+.task-delete:hover {
+    background-color: #c9302c;
+}
+
+/* Quick Links Styles */
+#links-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: var(--spacing-md);
+}
+
+.link-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-md);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+}
+
+.link-anchor {
+    flex: 1;
+    color: var(--primary-color);
+    text-decoration: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.link-anchor:hover {
+    text-decoration: underline;
+}
+
+.link-delete {
+    padding: var(--spacing-sm);
+    font-size: var(--font-size-sm);
+    background-color: var(--danger-color);
+}
+
+.link-delete:hover {
+    background-color: #c9302c;
+}
+
+/* Responsive Design */
+
+/* Mobile: 320px-767px */
+@media (max-width: 767px) {
+    body {
+        padding: var(--spacing-sm);
+    }
+
+    section {
+        padding: var(--spacing-md);
+        margin-bottom: var(--spacing-md);
+    }
+
+    #greeting-section {
+        padding: var(--spacing-lg);
+    }
+
+    #time-display {
+        font-size: var(--font-size-xl);
+    }
+
+    #date-display {
+        font-size: var(--font-size-md);
+    }
+
+    #greeting-text {
+        font-size: var(--font-size-md);
+    }
+
+    #timer-display {
+        font-size: 2rem;
+    }
+
+    #timer-controls {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    #timer-controls button {
+        width: 100%;
+        padding: var(--spacing-md);
+        font-size: var(--font-size-md);
+        min-height: 44px; /* Accessible touch target size */
+    }
+
+    form {
+        flex-direction: column;
+    }
+
+    form input {
+        width: 100%;
+        padding: var(--spacing-md);
+        font-size: var(--font-size-md);
+        min-height: 44px; /* Accessible touch target size */
+    }
+
+    form button {
+        width: 100%;
+        padding: var(--spacing-md);
+        font-size: var(--font-size-md);
+        min-height: 44px; /* Accessible touch target size */
+    }
+
+    .task-item {
+        flex-wrap: wrap;
+        gap: var(--spacing-sm);
+    }
+
+    .task-description {
+        flex: 1 1 100%;
+        min-width: 0;
+        word-wrap: break-word;
+    }
+
+    .task-edit,
+    .task-delete {
+        min-height: 44px; /* Accessible touch target size */
+        padding: var(--spacing-md);
+    }
+
+    #links-container {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-sm);
+    }
+
+    .link-item {
+        padding: var(--spacing-md);
+    }
+
+    .link-delete {
+        min-height: 44px; /* Accessible touch target size */
+        padding: var(--spacing-md);
+    }
+}
+
+/* Tablet: 768px-1023px */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .container {
+        max-width: 768px;
+    }
+
+    body {
+        padding: var(--spacing-md);
+    }
+
+    section {
+        padding: var(--spacing-lg);
+    }
+
+    #time-display {
+        font-size: 2.5rem;
+    }
+
+    #timer-display {
+        font-size: 3rem;
+    }
+
+    #timer-controls button {
+        min-height: 44px; /* Accessible touch target size */
+    }
+
+    form input,
+    form button {
+        min-height: 44px; /* Accessible touch target size */
+    }
+
+    #links-container {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Desktop: 1024px-1919px */
+@media (min-width: 1024px) and (max-width: 1919px) {
+    .container {
+        max-width: 1024px;
+    }
+
+    body {
+        padding: var(--spacing-lg);
+    }
+
+    section {
+        padding: var(--spacing-xl);
+    }
+
+    #time-display {
+        font-size: 2.5rem;
+    }
+
+    #timer-display {
+        font-size: 3.5rem;
+    }
+
+    #links-container {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* Large Desktop: 1920px-2560px */
+@media (min-width: 1920px) and (max-width: 2560px) {
+    .container {
+        max-width: 1400px;
+    }
+
+    body {
+        padding: var(--spacing-xl);
+    }
+
+    section {
+        padding: var(--spacing-xl);
+    }
+
+    #time-display {
+        font-size: 3rem;
+    }
+
+    #timer-display {
+        font-size: 4rem;
+    }
+
+    #links-container {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+/* Extra Large Desktop: 2560px+ */
+@media (min-width: 2561px) {
+    .container {
+        max-width: 1600px;
+    }
+
+    #links-container {
+        grid-template-columns: repeat(5, 1fr);
+    }
+}
